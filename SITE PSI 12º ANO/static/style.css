@@ -1,0 +1,107 @@
+/* Estilos gerais */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    padding: 20px;
+}
+
+.container {
+    width: 80%;
+    margin: 0 auto;
+    max-width: 1200px;
+    text-align: center;
+}
+
+/* Título */
+h1 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Formulário de upload */
+form {
+    margin-bottom: 30px;
+}
+
+label {
+    font-size: 1.1em;
+    color: #555;
+}
+
+input[type="file"] {
+    margin: 10px 0;
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    color: #333;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    font-size: 1em;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* Área de visualização da imagem */
+#imagePreview {
+    margin-top: 20px;
+}
+
+#uploadedImage {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+/* Controles de edição */
+#editorControls {
+    margin-top: 40px;
+}
+
+#editorControls button {
+    margin: 10px;
+}
+
+/* Estilos para o botão de download */
+#downloadButton {
+    margin-top: 30px;
+}
+
+#downloadLink {
+    text-decoration: none;
+}
+
+#downloadLink button {
+    background-color: #007bff;
+}
+
+#downloadLink button:hover {
+    background-color: #0056b3;
+}
+
+/* Estilo para o rodapé */
+hr {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    border: 1px solid #ddd;
+}

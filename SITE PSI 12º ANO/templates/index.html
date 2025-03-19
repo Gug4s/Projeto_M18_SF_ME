@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Imagens</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Editor de Imagens</h1>
+        
+        <!-- Formulário para upload de imagem -->
+        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+            <label for="image">Escolha uma imagem:</label>
+            <input type="file" id="image" name="image" accept="image/*" required>
+            <button type="submit">Carregar Imagem</button>
+        </form>
+        
+        <hr>
+
+        <!-- Área para exibir a imagem carregada -->
+        <div id="imagePreview">
+            <h2>Imagem Carregada</h2>
+            <img id="uploadedImage" src="#" alt="Imagem carregada" style="display: none;">
+        </div>
+
+        <hr>
+
+        <!-- Área para aplicar edições -->
+        <div id="editorControls">
+            <h2>Edições</h2>
+            <button onclick="rotateImage()">Rotacionar</button>
+            <button onclick="resizeImage()">Redimensionar</button>
+            <button onclick="adjustBrightness()">Ajustar Brilho</button>
+            <button onclick="adjustContrast()">Ajustar Contraste</button>
+            <button onclick="applySepia()">Aplicar Sepia</button>
+            <button onclick="applyBW()">Aplicar Preto e Branco</button>
+            <button onclick="addText()">Adicionar Texto</button>
+            <button onclick="addShape()">Adicionar Forma</button>
+        </div>
+
+        <hr>
+
+        <!-- Botão para baixar a imagem editada -->
+        <div id="downloadButton" style="display: none;">
+            <a id="downloadLink" href="#" download="imagem_editada.png">
+                <button>Baixar Imagem</button>
+            </a>
+        </div>
+    </div>
+
+    <!-- Script para carregar a imagem e interagir com a edição -->
+    <script>
+        // Exibe a imagem carregada
+        $("#image").change(function(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                $("#uploadedImage").attr("src", reader.result).show();
+                $("#downloadButton").show();
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        });
+
+        // Funções de edição
+        function rotateImage() {
+            // Chame uma função Flask para rotacionar a imagem
+            alert("Função de rotação não implementada");
+        }
+
+        function resizeImage() {
+            // Chame uma função Flask para redimensionar a imagem
+            alert("Função de redimensionamento não implementada");
+        }
+
+        function adjustBrightness() {
+            // Chame uma função Flask para ajustar o brilho
+            alert("Função de ajuste de brilho não implementada");
+        }
+
+        function adjustContrast() {
+            // Chame uma função Flask para ajustar o contraste
+            alert("Função de ajuste de contraste não implementada");
+        }
+
+        function applySepia() {
+            // Chame uma função Flask para aplicar o filtro sepia
+            alert("Função de filtro sepia não implementada");
+        }
+
+        function applyBW() {
+            // Chame uma função Flask para aplicar filtro preto e branco
+            alert("Função de filtro preto e branco não implementada");
+        }
+
+        function addText() {
+            // Chame uma função Flask para adicionar texto à imagem
+            alert("Função de adicionar texto não implementada");
+        }
+
+        function addShape() {
+            // Chame uma função Flask para adicionar formas geométricas
+            alert("Função de adicionar forma não implementada");
+        }
+    </script>
+
+</body>
+</html>
