@@ -1,110 +1,116 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor de Imagens</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 50%;
+        }
+        .image-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        img {
+            max-width: 400px;
+            max-height: 400px;
+            margin-left: 20px;
+        }
+        form {
+            margin-bottom: 10px;
+        }
+        input {
+            margin: 5px;
+        }
+    </style>
 </head>
 <body>
-
     <div class="container">
         <h1>Editor de Imagens</h1>
         
-        <!-- Formulário para upload de imagem -->
-        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-            <label for="image">Escolha uma imagem:</label>
-            <input type="file" id="image" name="image" accept="image/*" required>
-            <button type="submit">Carregar Imagem</button>
+        <!-- Formulário para enviar imagem -->
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="image" required>
+            <button type="submit">Enviar Imagem</button>
         </form>
+
+        {% if image_url %}
+            <h3>Imagem carregada:</h3>
+            <div class="image-container">
+                <img id="currentImage" src="{{ image_url }}" alt="Imagem carregada">
+            </div>
+        {% endif %}
         
-        <hr>
+        <!-- Formulários de edição -->
+        <h3>Edições:</h3>
+        
+        <!-- Redimensionar -->
+        <form action="/resize" method="post">
+            <input type="number" name="width" placeholder="Largura" required>
+            <input type="number" name="height" placeholder="Altura" required>
+            <button type="submit">Redimensionar</button>
+        </form>
 
-        <!-- Área para exibir a imagem carregada -->
-        <div id="imagePreview">
-            <h2>Imagem Carregada</h2>
-            <img id="uploadedImage" src="#" alt="Imagem carregada" style="display: none;">
-        </div>
+        <!-- Rotacionar -->
+        <form action="/rotate" method="post">
+            <input type="number" name="angle" placeholder="Ângulo" required>
+            <button type="submit">Rotacionar</button>
+        </form>
 
-        <hr>
+        <!-- Ajustar brilho e contraste -->
+        <form action="/adjust" method="post">
+            <input type="number" step="0.1" name="brightness" placeholder="Brilho" required>
+            <input type="number" step="0.1" name="contrast" placeholder="Contraste" required>
+            <button type="submit">Ajustar</button>
+        </form>
 
-        <!-- Área para aplicar edições -->
-        <div id="editorControls">
-            <h2>Edições</h2>
-            <button onclick="rotateImage()">Rotacionar</button>
-            <button onclick="resizeImage()">Redimensionar</button>
-            <button onclick="adjustBrightness()">Ajustar Brilho</button>
-            <button onclick="adjustContrast()">Ajustar Contraste</button>
-            <button onclick="applySepia()">Aplicar Sepia</button>
-            <button onclick="applyBW()">Aplicar Preto e Branco</button>
-            <button onclick="addText()">Adicionar Texto</button>
-            <button onclick="addShape()">Adicionar Forma</button>
-        </div>
+        <!-- Filtros -->
+        <form action="/bw" method="post">
+            <button type="submit">Preto e Branco</button>
+        </form>
 
-        <hr>
+        <form action="/sepia" method="post">
+            <button type="submit">Sepia</button>
+        </form>
 
-        <!-- Botão para baixar a imagem editada -->
-        <div id="downloadButton" style="display: none;">
-            <a id="downloadLink" href="#" download="imagem_editada.png">
-                <button>Baixar Imagem</button>
-            </a>
-        </div>
+        <!-- Desenho de formas -->
+        <form action="/draw" method="post">
+            <select name="shape">
+                <option value="circle">Círculo</option>
+                <option value="rectangle">Retângulo</option>
+                <option value="line">Linha</option>
+            </select>
+            <button type="submit">Desenhar</button>
+        </form>
+
+        <!-- Adicionar texto -->
+        <form action="/add_text" method="post">
+            <input type="text" name="text" placeholder="Texto" required>
+            <button type="submit">Adicionar Texto</button>
+        </form>
+
+        <!-- Baixar a imagem editada -->
+        <form action="/download" method="get">
+            <button type="submit">Baixar Imagem</button>
+        </form>
     </div>
 
-    <!-- Script para carregar a imagem e interagir com a edição -->
-    <script>
-        // Exibe a imagem carregada
-        $("#image").change(function(event) {
-            const reader = new FileReader();
-            reader.onload = function() {
-                $("#uploadedImage").attr("src", reader.result).show();
-                $("#downloadButton").show();
-            };
-            reader.readAsDataURL(event.target.files[0]);
-        });
-
-        // Funções de edição
-        function rotateImage() {
-            // Chame uma função Flask para rotacionar a imagem
-            alert("Função de rotação não implementada");
-        }
-
-        function resizeImage() {
-            // Chame uma função Flask para redimensionar a imagem
-            alert("Função de redimensionamento não implementada");
-        }
-
-        function adjustBrightness() {
-            // Chame uma função Flask para ajustar o brilho
-            alert("Função de ajuste de brilho não implementada");
-        }
-
-        function adjustContrast() {
-            // Chame uma função Flask para ajustar o contraste
-            alert("Função de ajuste de contraste não implementada");
-        }
-
-        function applySepia() {
-            // Chame uma função Flask para aplicar o filtro sepia
-            alert("Função de filtro sepia não implementada");
-        }
-
-        function applyBW() {
-            // Chame uma função Flask para aplicar filtro preto e branco
-            alert("Função de filtro preto e branco não implementada");
-        }
-
-        function addText() {
-            // Chame uma função Flask para adicionar texto à imagem
-            alert("Função de adicionar texto não implementada");
-        }
-
-        function addShape() {
-            // Chame uma função Flask para adicionar formas geométricas
-            alert("Função de adicionar forma não implementada");
-        }
-    </script>
-
+    <div class="image-container">
+        {% if image_url %}
+            <!-- Exibe a imagem editada ao lado -->
+            <img src="{{ image_url }}" id="currentImage" alt="Imagem Editada">
+        {% endif %}
+    </div>
 </body>
 </html>
