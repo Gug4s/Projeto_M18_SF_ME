@@ -4,42 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor de Imagens</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            padding: 20px;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            width: 50%;
-        }
-        .image-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        img {
-            max-width: 400px;
-            max-height: 400px;
-            margin-left: 20px;
-        }
-        form {
-            margin-bottom: 10px;
-        }
-        input {
-            margin: 5px;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
         <h1>Editor de Imagens</h1>
-        
-        <!-- Formulário para enviar imagem -->
+
+        <!-- Formulário para upload de imagem -->
         <form action="/upload" method="post" enctype="multipart/form-data">
             <input type="file" name="image" required>
             <button type="submit">Enviar Imagem</button>
@@ -48,68 +19,44 @@
         {% if image_url %}
             <h3>Imagem carregada:</h3>
             <div class="image-container">
-                <img id="currentImage" src="{{ image_url }}" alt="Imagem carregada">
+                <img id="currentImage" src="{{ url_for('static', filename='uploads/' + image_url) }}" alt="Imagem carregada">
             </div>
-        {% endif %}
-        
-        <!-- Formulários de edição -->
-        <h3>Edições:</h3>
-        
-        <!-- Redimensionar -->
-        <form action="/resize" method="post">
-            <input type="number" name="width" placeholder="Largura" required>
-            <input type="number" name="height" placeholder="Altura" required>
-            <button type="submit">Redimensionar</button>
-        </form>
 
-        <!-- Rotacionar -->
-        <form action="/rotate" method="post">
-            <input type="number" name="angle" placeholder="Ângulo" required>
-            <button type="submit">Rotacionar</button>
-        </form>
+            <!-- Campo oculto para manter o nome da imagem -->
+            <input type="hidden" id="image_filename" name="image_filename" value="{{ image_url }}">
 
-        <!-- Ajustar brilho e contraste -->
-        <form action="/adjust" method="post">
-            <input type="number" step="0.1" name="brightness" placeholder="Brilho" required>
-            <input type="number" step="0.1" name="contrast" placeholder="Contraste" required>
-            <button type="submit">Ajustar</button>
-        </form>
+            <!-- Formulário para redimensionar -->
+            <form action="/resize" method="post">
+                <input type="hidden" name="image_filename" value="{{ image_url }}">
+                <input type="number" name="width" placeholder="Largura" required>
+                <input type="number" name="height" placeholder="Altura" required>
+                <button type="submit">Redimensionar</button>
+            </form>
 
-        <!-- Filtros -->
-        <form action="/bw" method="post">
-            <button type="submit">Preto e Branco</button>
-        </form>
+            <!-- Formulário para rotacionar -->
+            <form action="/rotate" method="post">
+                <input type="hidden" name="image_filename" value="{{ image_url }}">
+                <input type="number" name="angle" placeholder="Ângulo" required>
+                <button type="submit">Rotacionar</button>
+            </form>
 
-        <form action="/sepia" method="post">
-            <button type="submit">Sepia</button>
-        </form>
+            <!-- Formulário para aplicar preto e branco -->
+            <form action="/bw" method="post">
+                <input type="hidden" name="image_filename" value="{{ image_url }}">
+                <button type="submit">Preto e Branco</button>
+            </form>
 
-        <!-- Desenho de formas -->
-        <form action="/draw" method="post">
-            <select name="shape">
-                <option value="circle">Círculo</option>
-                <option value="rectangle">Retângulo</option>
-                <option value="line">Linha</option>
-            </select>
-            <button type="submit">Desenhar</button>
-        </form>
+            <!-- Formulário para filtro sepia -->
+            <form action="/sepia" method="post">
+                <input type="hidden" name="image_filename" value="{{ image_url }}">
+                <button type="submit">Sepia</button>
+            </form>
 
-        <!-- Adicionar texto -->
-        <form action="/add_text" method="post">
-            <input type="text" name="text" placeholder="Texto" required>
-            <button type="submit">Adicionar Texto</button>
-        </form>
-
-        <!-- Baixar a imagem editada -->
-        <form action="/download" method="get">
-            <button type="submit">Baixar Imagem</button>
-        </form>
-    </div>
-
-    <div class="image-container">
-        {% if image_url %}
-            <!-- Exibe a imagem editada ao lado -->
-            <img src="{{ image_url }}" id="currentImage" alt="Imagem Editada">
+            <!-- Botão para baixar imagem -->
+            <form action="/download" method="get">
+                <input type="hidden" name="image_filename" value="{{ image_url }}">
+                <button type="submit">Baixar Imagem</button>
+            </form>
         {% endif %}
     </div>
 </body>
