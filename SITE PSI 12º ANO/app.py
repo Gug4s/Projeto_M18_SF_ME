@@ -3,7 +3,6 @@ from flask import Flask, render_template, request, send_file, send_from_director
 from PIL import Image, ImageEnhance, ImageOps
 from io import BytesIO
 import base64
-from io import BytesIO
 
 app = Flask(__name__)
 
