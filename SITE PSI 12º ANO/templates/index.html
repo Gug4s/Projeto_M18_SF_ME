@@ -10,54 +10,175 @@
     <div class="container">
         <h1>Editor de Imagens</h1>
 
-        <!-- Formulário para upload de imagem -->
+        <!-- Opção de upload de imagem -->
+        <h3>Carregar uma imagem do seu computador</h3>
         <form action="/upload" method="post" enctype="multipart/form-data">
             <input type="file" name="image" required>
             <button type="submit">Enviar Imagem</button>
         </form>
 
         {% if image_url %}
-            <h3>Imagem carregada:</h3>
-            <div class="image-container">
-                <img id="currentImage" src="{{ url_for('static', filename='uploads/' + image_url) }}" alt="Imagem carregada">
-            </div>
+        <h3>Imagem carregada:</h3>
+        <div class="image-container">
+            <img id="currentImage" src="{{ url_for('uploaded_file', filename=image_url) }}" alt="Imagem carregada">
+        </div>
 
-            <!-- Campo oculto para manter o nome da imagem -->
-            <input type="hidden" id="image_filename" name="image_filename" value="{{ image_url }}">
+        <!-- Botões de edição -->
+        <form action="/resize" method="post">
+            <input type="hidden" name="image_filename" value="{{ image_url }}">
+            <input type="number" name="width" placeholder="Largura" required>
+            <input type="number" name="height" placeholder="Altura" required>
+            <button type="submit">Redimensionar</button>
+        </form>
 
-            <!-- Formulário para redimensionar -->
-            <form action="/resize" method="post">
-                <input type="hidden" name="image_filename" value="{{ image_url }}">
-                <input type="number" name="width" placeholder="Largura" required>
-                <input type="number" name="height" placeholder="Altura" required>
-                <button type="submit">Redimensionar</button>
-            </form>
+        <form action="/rotate" method="post">
+            <input type="hidden" name="image_filename" value="{{ image_url }}">
+            <input type="number" name="angle" placeholder="Ângulo" required>
+            <button type="submit">Rotacionar</button>
+        </form>
 
-            <!-- Formulário para rotacionar -->
-            <form action="/rotate" method="post">
-                <input type="hidden" name="image_filename" value="{{ image_url }}">
-                <input type="number" name="angle" placeholder="Ângulo" required>
-                <button type="submit">Rotacionar</button>
-            </form>
+        <form action="/bw" method="post">
+            <input type="hidden" name="image_filename" value="{{ image_url }}">
+            <button type="submit">Preto e Branco</button>
+        </form>
 
-            <!-- Formulário para aplicar preto e branco -->
-            <form action="/bw" method="post">
-                <input type="hidden" name="image_filename" value="{{ image_url }}">
-                <button type="submit">Preto e Branco</button>
-            </form>
+        <form action="/sepia" method="post">
+            <input type="hidden" name="image_filename" value="{{ image_url }}">
+            <button type="submit">Sepia</button>
+        </form>
 
-            <!-- Formulário para filtro sepia -->
-            <form action="/sepia" method="post">
-                <input type="hidden" name="image_filename" value="{{ image_url }}">
-                <button type="submit">Sepia</button>
-            </form>
-
-            <!-- Botão para baixar imagem -->
-            <form action="/download" method="get">
-                <input type="hidden" name="image_filename" value="{{ image_url }}">
-                <button type="submit">Baixar Imagem</button>
-            </form>
+        <form action="/download" method="get">
+            <input type="hidden" name="image_filename" value="{{ image_url }}">
+            <button type="submit">Baixar Imagem</button>
+        </form>
         {% endif %}
+
+        <!-- Canvas para criar uma imagem do zero -->
+        <h3>Ou desenhar sua imagem do zero</h3>
+        <canvas id="canvas" width="800" height="600" style="border:1px solid black;"></canvas>
+
+        <div>
+            <button id="clearCanvas">Limpar Canvas</button>
+            <button id="saveImage">Salvar Imagem</button>
+        </div>
+
+        <!-- Formulários para adicionar formas e textos -->
+        <form id="drawForm">
+            <select id="shapeSelect">
+                <option value="circle">Círculo</option>
+                <option value="rectangle">Retângulo</option>
+                <option value="line">Linha</option>
+            </select>
+            <button type="submit">Adicionar Forma</button>
+        </form>
+
+        <form id="addTextForm">
+            <input type="text" id="textInput" placeholder="Texto para adicionar" required>
+            <button type="submit">Adicionar Texto</button>
+        </form>
+
+        <div id="imageContainer" style="display:none;">
+            <h3>Imagem criada:</h3>
+            <img id="createdImage" src="" alt="Imagem criada" />
+        </div>
+
     </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+
+        // Adicionar evento para desenhar no canvas
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+
+        function startDrawing(e) {
+            drawing = true;
+            draw(e);
+        }
+
+        function stopDrawing() {
+            drawing = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!drawing) return;
+
+            ctx.lineWidth = 5;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = 'black';
+
+            ctx.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+        }
+
+        // Limpar canvas
+        document.getElementById('clearCanvas').addEventListener('click', function () {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+        // Salvar imagem
+        document.getElementById('saveImage').addEventListener('click', function () {
+            const dataUrl = canvas.toDataURL('image/jpeg');
+            document.getElementById('createdImage').src = dataUrl;
+            document.getElementById('imageContainer').style.display = 'block';
+
+            // Enviar para o servidor (salvar no backend)
+            fetch('/save_canvas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ image_data: dataUrl }),
+            }).then(response => response.blob()).then(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'imagem_criada.jpg';
+                a.click();
+            });
+        });
+
+        // Adicionar formas
+        document.getElementById('drawForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const shape = document.getElementById('shapeSelect').value;
+            drawShape(shape);
+        });
+
+        function drawShape(shape) {
+            ctx.beginPath();
+            const x = 100, y = 100, width = 150, height = 150;
+
+            if (shape === 'circle') {
+                ctx.arc(x + width / 2, y + height / 2, 50, 0, 2 * Math.PI);
+                ctx.fillStyle = 'blue';
+                ctx.fill();
+            } else if (shape === 'rectangle') {
+                ctx.rect(x, y, width, height);
+                ctx.fillStyle = 'red';
+                ctx.fill();
+            } else if (shape === 'line') {
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + width, y + height);
+                ctx.strokeStyle = 'green';
+                ctx.stroke();
+            }
+        }
+
+        // Adicionar texto
+        document.getElementById('addTextForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const text = document.getElementById('textInput').value;
+            ctx.font = '30px Arial';
+            ctx.fillStyle = 'white';
+            ctx.fillText(text, 200, 200);
+        });
+    </script>
 </body>
 </html>
