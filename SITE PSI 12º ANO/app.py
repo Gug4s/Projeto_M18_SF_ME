@@ -1,6 +1,6 @@
 import os
 from flask import Flask, render_template, request, send_file, send_from_directory, jsonify
-from PIL import Image, ImageEnhance, ImageOps
+from PIL import Image, ImageEnhance, ImageOps, ImageDraw, ImageFont
 from io import BytesIO
 import base64
 
@@ -16,15 +16,34 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 # Função para verificar se o arquivo tem um formato permitido
 def allowed_file(filename):
+    """
+    Verifica se o arquivo possui um formato de imagem permitido.
+
+    @param filename: Nome do arquivo a ser verificado.
+    @return: Retorna True se o arquivo tiver uma extensão permitida, False caso contrário.
+    """
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ['png', 'jpg', 'jpeg', 'gif']
 
 @app.route('/')
 def index():
+    """
+    Rota para a página inicial do editor de imagens.
+    Renderiza a página HTML com a imagem carregada (se houver).
+    
+    @return: Renderiza a página inicial.
+    """
     return render_template('index.html', image_url=None)
 
-# Upload da imagem
 @app.route('/upload', methods=['POST'])
 def upload_image():
+    """
+    Rota para o upload de uma imagem para o servidor.
+
+    Verifica se o arquivo enviado é uma imagem válida, converte para o formato RGB (caso tenha transparência),
+    e salva a imagem original e a imagem carregada.
+
+    @return: Renderiza a página inicial com a imagem carregada ou retorna uma mensagem de erro.
+    """
     if 'image' not in request.files:
         return 'Nenhuma imagem carregada', 400
 
@@ -47,14 +66,23 @@ def upload_image():
 
     return 'Arquivo inválido', 400
 
-# Servir imagens carregadas
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
+    """
+    Rota para servir a imagem carregada.
+
+    @param filename: Nome do arquivo de imagem a ser enviado.
+    @return: Envia a imagem para o cliente.
+    """
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-# Restaurar a imagem original
 @app.route('/reset', methods=['POST'])
 def reset_image():
+    """
+    Rota para restaurar a imagem original e substituí-la pela imagem carregada.
+
+    @return: Envia a imagem restaurada para o cliente.
+    """
     original_path = os.path.join(app.config['UPLOAD_FOLDER'], 'original_image.jpg')
     edited_path = os.path.join(app.config['UPLOAD_FOLDER'], 'uploaded_image.jpg')
 
@@ -65,9 +93,15 @@ def reset_image():
 
     return 'Nenhuma imagem original encontrada', 400
 
-# Redimensionar a imagem
 @app.route('/resize', methods=['POST'])
 def resize_image():
+    """
+    Rota para redimensionar a imagem carregada.
+
+    Recebe as novas dimensões (largura e altura) e redimensiona a imagem.
+
+    @return: Envia a imagem redimensionada.
+    """
     width = int(request.form['width'])
     height = int(request.form['height'])
     img_path = os.path.join(app.config['UPLOAD_FOLDER'], 'uploaded_image.jpg')
@@ -77,9 +111,15 @@ def resize_image():
     img.save(img_path, format='JPEG')
     return send_image(img)
 
-# Rotacionar a imagem
 @app.route('/rotate', methods=['POST'])
 def rotate_image():
+    """
+    Rota para rotacionar a imagem carregada.
+
+    Recebe um ângulo (em graus) e rotaciona a imagem carregada.
+
+    @return: Envia a imagem rotacionada.
+    """
     angle = int(request.form['angle'])
     img_path = os.path.join(app.config['UPLOAD_FOLDER'], 'uploaded_image.jpg')
 
@@ -88,17 +128,29 @@ def rotate_image():
     img.save(img_path, format='JPEG')
     return send_image(img)
 
-# Aplicar filtro preto e branco
 @app.route('/bw', methods=['POST'])
 def bw_filter():
+    """
+    Rota para aplicar o filtro preto e branco na imagem.
+
+    Converte a imagem carregada para escala de cinza.
+
+    @return: Envia a imagem em preto e branco.
+    """
     img_path = os.path.join(app.config['UPLOAD_FOLDER'], 'uploaded_image.jpg')
     img = Image.open(img_path).convert('L')
     img.save(img_path, format='JPEG')
     return send_image(img)
 
-# Aplicar filtro sépia
 @app.route('/sepia', methods=['POST'])
 def sepia_filter():
+    """
+    Rota para aplicar o filtro sépia na imagem.
+
+    Aplica um efeito sépia na imagem carregada.
+
+    @return: Envia a imagem com o filtro sépia.
+    """
     img_path = os.path.join(app.config['UPLOAD_FOLDER'], 'uploaded_image.jpg')
     img = Image.open(img_path).convert('RGB')
 
@@ -115,23 +167,98 @@ def sepia_filter():
 
     img.save(img_path, format='JPEG')
     return send_image(img)
+# Rota para adicionar texto à imagem carregada
+@app.route('/add_text', methods=['POST'])
+def add_text():
+    """
+    Rota para adicionar texto à imagem carregada.
 
-# Baixar imagem editada
+    Recebe o texto inserido pelo usuário e desenha sobre a imagem.
+
+    @return: Exibe a imagem com o texto adicionado.
+    """
+    text = request.form['text']
+    img_path = os.path.join(app.config['UPLOAD_FOLDER'], 'uploaded_image.jpg')
+    
+    # Abrir a imagem
+    img = Image.open(img_path).convert('RGB')
+    draw = ImageDraw.Draw(img)
+    
+    # Definir a fonte
+    font = ImageFont.load_default()
+    
+    # Adicionar o texto na imagem
+    draw.text((50, 50), text, fill="black", font=font)  # Posição (50, 50) e cor preta
+
+    # Salvar a imagem modificada
+    img.save(img_path, format='JPEG')
+    
+    return send_image(img)
+
+# Rota para adicionar formas à imagem carregada
+@app.route('/add_shape', methods=['POST'])
+def add_shape():
+    """
+    Rota para adicionar formas (círculo, retângulo, linha) à imagem carregada.
+
+    Recebe a forma escolhida pelo usuário e desenha sobre a imagem.
+
+    @return: Exibe a imagem com a forma adicionada.
+    """
+    shape = request.form['shape']
+    img_path = os.path.join(app.config['UPLOAD_FOLDER'], 'uploaded_image.jpg')
+    
+    # Abrir a imagem
+    img = Image.open(img_path).convert('RGB')
+    draw = ImageDraw.Draw(img)
+    
+    # Adicionar a forma conforme a escolha do usuário
+    if shape == 'circle':
+        # Adiciona um círculo
+        draw.ellipse([100, 100, 200, 200], outline="blue", width=5)
+    elif shape == 'rectangle':
+        # Adiciona um retângulo
+        draw.rectangle([100, 100, 250, 250], outline="red", width=5)
+    elif shape == 'line':
+        # Adiciona uma linha
+        draw.line([100, 100, 200, 200], fill="green", width=5)
+
+    # Salvar a imagem modificada
+    img.save(img_path, format='JPEG')
+    
+    return send_image(img)
+
 @app.route('/download', methods=['GET'])
 def download_image():
+    """
+    Rota para baixar a imagem editada.
+
+    @return: Envia o arquivo de imagem editado como download.
+    """
     img_path = os.path.join(app.config['UPLOAD_FOLDER'], 'uploaded_image.jpg')
     return send_file(img_path, as_attachment=True)
 
-# Enviar imagem editada como resposta
 def send_image(img):
+    """
+    Função auxiliar para enviar a imagem como resposta HTTP.
+
+    @param img: A imagem PIL a ser enviada.
+    @return: Envia a imagem como resposta HTTP no formato JPEG.
+    """
     img_byte_arr = BytesIO()
     img.save(img_byte_arr, format='JPEG')
     img_byte_arr.seek(0)
     return send_file(img_byte_arr, mimetype='image/jpeg')
 
-# Rota para salvar a imagem criada no canvas
 @app.route('/save_canvas', methods=['POST'])
 def save_canvas_image():
+    """
+    Rota para salvar a imagem desenhada no canvas como um arquivo de imagem.
+
+    Recebe a imagem no formato base64, converte para um arquivo e a salva no servidor.
+
+    @return: Envia o arquivo de imagem criada como download.
+    """
     data = request.get_json()
     image_data = data.get('image_data')
 
